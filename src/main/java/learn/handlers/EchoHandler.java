@@ -1,16 +1,26 @@
 package learn.handlers;
 
-import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import learn.annotations.Api;
+import learn.annotations.Blocking;
+import learn.config.BaseHandler;
 
-public class EchoHandler implements Handler<RoutingContext> {
+@Api(methods= {HttpMethod.GET, HttpMethod.POST}, uri="/echo")
+public class EchoHandler implements BaseHandler {
 
 	@Override
-	public void handle(RoutingContext rc) {
-		System.out.println(rc.getBodyAsJson());
-		rc.vertx().eventBus().request("my.queue", rc.getBodyAsJson(), result -> {
+	@Blocking
+	public void post(JsonObject json, RoutingContext rc) {
+		rc.vertx().eventBus().request("my.queue", json, result -> {
 			System.out.println("Reply received: "+result.result().body());
 		});
+		rc.response().end("Hello world..");
+	}
+	
+	@Override
+	public void get(RoutingContext rc) {
 		rc.response().end("Hello world..");
 	}
 }
